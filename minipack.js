@@ -34,4 +34,11 @@ let createAsset = filename => {
     };
 }
 
-createAsset('minipack.js');  
+function createGraph(entry) {
+    const mainAsset = createAsset(entry);
+    const queue = [mainAsset];
+
+    return queue;
+}
+
+const graph = createGraph('./entry.js')
