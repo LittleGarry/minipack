@@ -38,6 +38,21 @@ function createGraph(entry) {
     const mainAsset = createAsset(entry);
     const queue = [mainAsset];
 
+    for (const asset of queue) {
+        asset.mapping = {};
+
+        const dirname = path.dirname(asset.filename);
+
+        asset.dependencies.forEach(relativePath => {
+            const absolutePath = path.join(dirname, relativePath);
+            const child = createAsset(absolutePath);
+
+            asset.mapping[relativePath] = child.id;
+
+            queue.push(child);
+        });
+    }
+
     return queue;
 }
 
