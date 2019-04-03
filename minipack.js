@@ -8,6 +8,7 @@ let ID = 0;
 
 let createAsset = filename => {
     const content = fs.readFileSync(filename, 'utf-8');
+
     const ast = babylon.parse(content, {
         sourceType: 'module'
     });
@@ -56,4 +57,38 @@ function createGraph(entry) {
     return queue;
 }
 
-const graph = createGraph('./entry.js')
+function bundle(graph) {
+    let modules = '';
+
+    graph.forEach(mod => {
+        modules += `${mod.id}: [function(require, module, exports) { ${mod.code}}, ${JSON.stringify(mod.mapping)},],`;
+    });
+
+    console.log(modules);
+    
+    const result =
+    `(function(modules) {
+        function require(id) {
+            const [fn, mapping] = modules[id];
+
+            function localeRequire(name) {
+                return require(mapping[name]);
+            }
+
+            const module = { exports : {} };
+
+            fn(localeRequire, module, module.exports);
+
+            return module.exports;
+        }
+
+        require(0)
+    })({${modules}})`;
+
+    return result;
+}
+
+const graph = createGraph('./example/entry.js')
+const result = bundle(graph);
+
+console.log(result);
